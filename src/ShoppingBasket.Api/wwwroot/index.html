@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shopping Basket</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+    .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: .75rem; }
+    .product { border: 1px solid #ddd; border-radius: 8px; padding: .75rem; }
+    .product small { display: block; color: #0a7d32; min-height: 1.2em; }
+    button { cursor: pointer; padding: .35rem .7rem; border-radius: 6px; border: 1px solid #888; background: #fff; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    td, th { text-align: left; padding: .35rem; border-bottom: 1px solid #eee; }
+    .total { font-size: 1.3rem; font-weight: 600; margin-top: .75rem; }
+    .error { color: #b00020; }
+  </style>
+</head>
+<body>
+  <h1>Shopping Basket</h1>
+  <div class="products" id="products"></div>
+
+  <h2>Basket</h2>
+  <p id="basket">Empty</p>
+  <button id="clear">Clear basket</button>
+
+  <table id="receipt" hidden>
+    <thead><tr><th>Item</th><th>Qty</th><th>Cost</th><th>Saving</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <p class="total" id="total"></p>
+  <p class="error" id="error"></p>
+
+  <script>
+    const basket = [];
+    const pounds = p => '£' + (p / 100).toFixed(2);
+
+    async function loadProducts() {
+      const products = await (await fetch('/api/products')).json();
+      const host = document.getElementById('products');
+      for (const p of products) {
+        const card = document.createElement('div');
+        card.className = 'product';
+        card.innerHTML = `<strong>${p.name}</strong> ${pounds(p.unitPricePence)}<small>${p.offer ?? ''}</small>`;
+        const add = document.createElement('button');
+        add.textContent = 'Add';
+        add.onclick = () => { basket.push(p.name); price(); };
+        card.appendChild(add);
+        host.appendChild(card);
+      }
+    }
+
+    async function price() {
+      document.getElementById('basket').textContent = basket.length ? basket.join(', ') : 'Empty';
+      const res = await fetch('/api/basket/price', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(basket),
+      });
+      const data = await res.json();
+      document.getElementById('error').textContent = res.ok ? '' : data.error;
+      if (!res.ok) return;
+
+      const body = document.querySelector('#receipt tbody');
+      body.innerHTML = data.lines.map(l =>
+        `<tr><td>${l.product}</td><td>${l.quantity}</td><td>${pounds(l.costPence)}</td><td>${l.savingPence ? pounds(l.savingPence) : ''}</td></tr>`
+      ).join('');
+      document.getElementById('receipt').hidden = data.lines.length === 0;
+      document.getElementById('total').textContent =
+        `Total: ${data.total}` + (data.totalSavingPence ? ` (you saved ${data.totalSaving})` : '');
+    }
+
+    document.getElementById('clear').onclick = () => { basket.length = 0; price(); };
+    loadProducts().then(price);
+  </script>
+</body>
+</html>
