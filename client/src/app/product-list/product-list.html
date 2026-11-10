@@ -1,0 +1,35 @@
+<div class="grid">
+  @for (product of products(); track product.name) {
+    <article class="card" [class.in-basket]="quantities()[product.name]">
+      <div class="icon" aria-hidden="true">
+        @switch (product.name) {
+          @case ('Apple') { 🍎 }
+          @case ('Banana') { 🍌 }
+          @case ('Melon') { 🍈 }
+          @case ('Lime') { 🍋‍🟩 }
+          @default { 🛒 }
+        }
+      </div>
+      <h3>{{ product.name }}</h3>
+      <p class="price">{{ product.unitPricePence | pounds }} each</p>
+      <p class="offer">
+        @if (product.offer) {
+          <span class="badge">{{ product.offer }}</span>
+        }
+      </p>
+
+      <div class="qty">
+        <button
+          type="button"
+          (click)="remove.emit(product.name)"
+          [disabled]="!quantities()[product.name]"
+          [attr.aria-label]="'Remove one ' + product.name"
+        >−</button>
+        <span data-testid="qty">{{ quantities()[product.name] || 0 }}</span>
+        <button type="button" (click)="add.emit(product.name)" [attr.aria-label]="'Add one ' + product.name">+</button>
+      </div>
+    </article>
+  } @empty {
+    <p>Loading products…</p>
+  }
+</div>

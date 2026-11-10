@@ -1,0 +1,33 @@
+<header>
+  <h1>Shopping Basket</h1>
+  <p>Add items and the basket is priced by the C# API, offers included.</p>
+</header>
+
+<main>
+  <section class="products">
+    <h2>Products</h2>
+    <app-product-list
+      [products]="products()"
+      [quantities]="store.quantities()"
+      (add)="store.add($event)"
+      (remove)="store.removeOne($event)"
+    />
+  </section>
+
+  <aside class="basket">
+    <div class="basket-head">
+      <h2>Basket <span class="count">{{ store.itemCount() }}</span></h2>
+      <button type="button" class="link" (click)="store.clear()" [disabled]="!store.itemCount()">Clear</button>
+    </div>
+
+    @if (store.error(); as error) {
+      <p class="error" role="alert">{{ error }}</p>
+    }
+
+    <app-receipt-summary [receipt]="store.receipt()" [loading]="store.loading()" />
+
+    @if (store.itemCount()) {
+      <p class="raw">Sent to the API: {{ store.items().join(', ') }}</p>
+    }
+  </aside>
+</main>

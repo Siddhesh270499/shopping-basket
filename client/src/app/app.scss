@@ -1,0 +1,90 @@
+:host {
+  display: block;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+header {
+  margin-bottom: 1.5rem;
+
+  h1 {
+    margin: 0;
+    font-size: 1.9rem;
+  }
+
+  p {
+    margin: 0.3rem 0 0;
+    color: var(--muted);
+  }
+}
+
+h2 {
+  font-size: 1.1rem;
+  margin: 0 0 0.9rem;
+}
+
+main {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.basket {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.1rem;
+  position: sticky;
+  top: 1rem;
+}
+
+.basket-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.count {
+  display: inline-block;
+  min-width: 1.6rem;
+  margin-left: 0.3rem;
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+
+  &:disabled {
+    color: var(--muted);
+    cursor: default;
+  }
+}
+
+.error {
+  background: var(--error-bg);
+  color: var(--error-fg);
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+}
+
+.raw {
+  margin: 1rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  word-break: break-word;
+}

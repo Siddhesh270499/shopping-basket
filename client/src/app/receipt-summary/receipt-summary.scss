@@ -1,0 +1,56 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.55rem 0.25rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+th {
+  font-size: 0.8rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+s {
+  color: var(--muted);
+  margin-right: 0.35rem;
+}
+
+.saving {
+  font-size: 0.8rem;
+  color: var(--offer-fg);
+}
+
+.total-saving {
+  margin: 0.9rem 0 0;
+  color: var(--offer-fg);
+  font-weight: 600;
+  text-align: right;
+}
+
+.total {
+  margin: 0.4rem 0 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.25rem;
+
+  &.stale {
+    opacity: 0.6;
+  }
+}
+
+.empty {
+  color: var(--muted);
+}

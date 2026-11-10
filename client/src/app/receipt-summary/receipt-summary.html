@@ -1,0 +1,41 @@
+@let r = receipt();
+
+@if (r && r.lines.length) {
+  <table>
+    <thead>
+      <tr>
+        <th>Item</th>
+        <th class="num">Qty</th>
+        <th class="num">Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (line of r.lines; track line.product) {
+        <tr>
+          <td>
+            {{ line.product }}
+            @if (line.savingPence > 0) {
+              <div class="saving">{{ line.offer }}: −{{ line.savingPence | pounds }}</div>
+            }
+          </td>
+          <td class="num">{{ line.quantity }}</td>
+          <td class="num">
+            @if (line.savingPence > 0) {
+              <s>{{ line.fullPricePence | pounds }}</s>
+            }
+            {{ line.costPence | pounds }}
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  @if (r.totalSavingPence > 0) {
+    <p class="total-saving">You save {{ r.totalSaving }}</p>
+  }
+  <p class="total" [class.stale]="loading()">
+    Total <strong data-testid="total">{{ r.total }}</strong>
+  </p>
+} @else {
+  <p class="empty">Your basket is empty. Add something from the list.</p>
+}

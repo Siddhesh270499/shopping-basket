@@ -7,8 +7,18 @@ builder.Services.AddSingleton<BasketCalculator>();
 
 var app = builder.Build();
 
+// Serves the Angular app once it has been built into wwwroot (cd client && npm run build).
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+// Shown only when the UI has not been built: the API itself still works.
+var uiBuilt = app.Environment.WebRootPath is { } webRoot && File.Exists(Path.Combine(webRoot, "index.html"));
+if (!uiBuilt)
+{
+    app.MapGet("/", () => Results.Text(
+        "Shopping Basket API is running. Endpoints: GET /api/products, POST /api/basket/price. " +
+        "For the UI, run the Angular app in client/ (npm start) or build it into wwwroot (npm run build)."));
+}
 
 // Products and their offers, for the UI.
 app.MapGet("/api/products", (PriceCatalogue catalogue) =>

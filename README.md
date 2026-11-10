@@ -11,19 +11,32 @@ Calculates the total cost of a basket of shopping, given as a list of item names
 
 ## How to run
 
-Requires the .NET 8 SDK.
+Requires the .NET 8 SDK; the web UI also needs Node.js 20+.
 
 ```bash
-# Tests (53 cases)
+# Back-end tests (53 cases)
 dotnet test
 
 # Command line
 dotnet run --project src/ShoppingBasket.Cli -- Apple Apple Banana
 dotnet run --project src/ShoppingBasket.Cli -- "Apple, Melon, Melon, Lime, Lime, Lime"
 
-# Small web API + page (open http://localhost:5000)
+# Web API
 dotnet run --project src/ShoppingBasket.Api --urls http://localhost:5000
+
+# Angular UI (second terminal) -> http://localhost:4200
+cd client
+npm install
+npm start
+
+# Front-end tests (7 cases)
+cd client && npm test -- --watch=false
+
+# Or serve the UI from the API itself: build it into wwwroot, then open http://localhost:5000
+cd client && npm run build
 ```
+
+![Angular UI: products with offers on the left, priced basket with savings on the right](docs/screenshot.jpg)
 
 Example output:
 
@@ -50,10 +63,18 @@ src/
     BasketReceipt         one line per product (quantity, cost, saving) + totals
     Money                 formats pence as £0.00
   ShoppingBasket.Cli      console front end
-  ShoppingBasket.Api      ASP.NET Core minimal API + one static HTML page
+  ShoppingBasket.Api      ASP.NET Core minimal API: GET /api/products, POST /api/basket/price
 tests/
   ShoppingBasket.Tests    xUnit tests
+client/                   Angular 21 front end
+  basket/basket.api.ts        HttpClient calls to the two endpoints
+  basket/basket.store.ts      basket state in signals; re-prices on every change (switchMap cancels stale calls)
+  product-list/               product cards with +/- buttons (inputs/outputs, OnPush)
+  receipt-summary/            priced lines, savings and total
+  shared/pounds.pipe.ts       135 -> "£1.35"
 ```
+
+Request flow: the UI keeps the basket as a list of names (`["Apple", "Melon", "Melon"]`), exactly the input the task describes, and posts it to `/api/basket/price`. The API passes it to `BasketCalculator` and returns the receipt as JSON. The UI never calculates prices itself, so the rules live in one place and are covered by the C# tests.
 
 How a basket is priced:
 
@@ -103,9 +124,21 @@ Assumptions:
 | 20 | Invalid products | blank name, negative price, duplicate name | rejected |
 | 21 | Money formatting | 0, 5, 90, 135, 10005 pence | £0.00, £0.05, £0.90, £1.35, £100.05 |
 
+Front-end tests (Vitest, `client/`):
+
+| # | Scenario | Expected |
+|---|---|---|
+| F1 | Pounds pipe | 0 / 5 / 135 / 10005 pence show as £0.00 / £0.05 / £1.35 / £100.05; null shows £0.00 |
+| F2 | Basket store sends the basket | Adding Apple, Apple, Banana posts `["Apple","Apple","Banana"]` and shows the returned total |
+| F3 | Quantities | Melon, Lime, Melon gives `{ Melon: 2, Lime: 1 }`, 3 items |
+| F4 | Remove one and clear | Removes the last matching item; removing an item not in the basket changes nothing; clear empties it |
+| F5 | API error | A 400 for "Mango" shows the API's message |
+| F6 | Page | Lists the products with their offers; clicking "+" on Melon posts `["Melon"]` and shows £0.50 |
+
 ## Possible next steps
 
 - Load prices and offers from configuration or a database.
 - Offers across different products (for example "meal deal").
 - Return a receipt that lists each offer applied as its own line.
-- Persist baskets behind the API, and an Angular or React front end in place of the plain HTML page.
+- Persist baskets behind the API.
+- End-to-end tests (Playwright) across the UI and API.
